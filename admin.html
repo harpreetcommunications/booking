@@ -104,25 +104,16 @@
             }
         }
 
-       // 100% ਚੱਲਣ ਵਾਲਾ 'ਪਿੰਗਲਿਸ਼' (Pinglish) ਕੋਡ
+       // ਸਿਰਫ਼ ਪ੍ਰੋਫੈਸ਼ਨਲ Bell (ਘੰਟੀ) ਦੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
         function playAudio(num, counterNum) {
-            // ਨੰਬਰਾਂ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਅੱਖਰਾਂ ਵਿੱਚ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਦੇਣਾ
-            const pWords = ['zero', 'ikk', 'dho', 'tinn', 'chaar', 'panj', 'chhe', 'satt', 'atth', 'naau'];
+            // ਇਹ ਗੂਗਲ ਦੀ ਓਰਿਜਨਲ ਪ੍ਰੋਫੈਸ਼ਨਲ 'Ding' (ਘੰਟੀ) ਦੀ ਆਵਾਜ਼ ਦਾ ਲਿੰਕ ਹੈ
+            let bell = new Audio('https://actions.google.com/sounds/v1/doors/elevator_ding.ogg');
             
-            // ਜੇ ਨੰਬਰ 12 ਹੈ, ਤਾਂ ਇਹ 'ikk do' ਬਣਾਵੇਗਾ
-            let nStr = num.toString().split('').map(d => pWords[parseInt(d)]).join(' ');
-            let cStr = counterNum.toString().split('').map(d => pWords[parseInt(d)]).join(' ');
-
-            // ਸਾਰੀ ਲਾਈਨ ਅੰਗਰੇਜ਼ੀ ਅੱਖਰਾਂ ਵਿੱਚ ਹੈ, ਇਸ ਲਈ ਕੰਪਿਊਟਰ ਇਸਨੂੰ ਛੱਡ ਨਹੀਂ ਸਕੇਗਾ
-            let text = "Token number, " + nStr + ", kirpaa karke, counter number, " + cStr + " te aao";
+            // ਆਵਾਜ਼ ਨੂੰ ਫੁੱਲ ਕਰਨ ਲਈ
+            bell.volume = 1.0; 
             
-            let speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'hi-IN'; // ਇੰਡੀਅਨ ਐਕਸੈਂਟ
-            speech.rate = 0.85; // ਆਵਾਜ਼ ਦੀ ਸਪੀਡ
-            speech.volume = 1;
-            
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(speech);
+            // ਘੰਟੀ ਵਜਾਉਣ ਲਈ
+            bell.play();
         }
         
     </script>
