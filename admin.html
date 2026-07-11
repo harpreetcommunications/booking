@@ -104,14 +104,18 @@
             }
         }
 
-       // ⚠️ ਨਵੀਂ ਆਵਾਜ਼ ਵਾਲਾ ਕੋਡ (Built-in Speech API)
+       // ਬਿਲਕੁਲ ਸਾਫ਼ ਦੇਸੀ ਆਵਾਜ਼ ਲਈ ਨਵਾਂ ਕੋਡ
         function playAudio(num, counterNum) {
-            let text = "ਟੋਕਨ ਨੰਬਰ " + num + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + counterNum + " ਤੇ ਆਓ";
+            // ਅੱਖਰ ਅੰਗਰੇਜ਼ੀ ਦੇ, ਪਰ ਆਵਾਜ਼ ਪੰਜਾਬੀ/ਹਿੰਦੀ ਵਾਲੀ
+            let text = "Token number " + num + ", kripaa karke counter number " + counterNum + " te aao";
             
             let speech = new SpeechSynthesisUtterance();
             speech.text = text;
-            speech.lang = 'pa-IN'; // ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ
-            speech.rate = 0.9; 
+            
+            // hi-IN (Hindi-India) ਲਗਾਉਣ ਨਾਲ ਕੰਪਿਊਟਰ ਦੇਸੀ ਐਕਸੈਂਟ ਵਿੱਚ ਬੋਲੇਗਾ
+            speech.lang = 'hi-IN'; 
+            
+            speech.rate = 0.85; // ਆਵਾਜ਼ ਦੀ ਸਪੀਡ ਥੋੜ੍ਹੀ ਟਿਕਾਅ ਵਾਲੀ
             speech.volume = 1.0; 
             
             window.speechSynthesis.speak(speech);
