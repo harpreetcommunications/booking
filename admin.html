@@ -104,17 +104,15 @@
             }
         }
 
-        function playAudio(num, counterNum) {
-            // ਆਵਾਜ਼ ਵਾਲਾ ਨਵਾਂ ਅਤੇ ਪੱਕਾ ਕੋਡ 
+       // ⚠️ ਨਵੀਂ ਆਵਾਜ਼ ਵਾਲਾ ਕੋਡ (Built-in Speech API)
         function playAudio(num, counterNum) {
             let text = "ਟੋਕਨ ਨੰਬਰ " + num + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + counterNum + " ਤੇ ਆਓ";
             
-            // ਬ੍ਰਾਊਜ਼ਰ ਦੀ ਆਪਣੀ ਇਨ-ਬਿਲਟ ਆਵਾਜ਼ (Speech API)
             let speech = new SpeechSynthesisUtterance();
             speech.text = text;
             speech.lang = 'pa-IN'; // ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ
-            speech.rate = 0.9; // ਆਵਾਜ਼ ਦੀ ਸਪੀਡ ਥੋੜ੍ਹੀ ਨਾਰਮਲ ਰੱਖਣ ਲਈ
-            speech.volume = 1.0; // ਫੁੱਲ ਆਵਾਜ਼
+            speech.rate = 0.9; 
+            speech.volume = 1.0; 
             
             window.speechSynthesis.speak(speech);
         }
