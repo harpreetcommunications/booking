@@ -104,21 +104,17 @@
             }
         }
 
-       / 100% ਠੇਠ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
+       // 100% ਠੇਠ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
         function playAudio(num, counterNum) {
-            // 1. ਅੰਗਰੇਜ਼ੀ ਨੰਬਰਾਂ ਨੂੰ ਗੁਰਮੁਖੀ ਨੰਬਰਾਂ ਵਿੱਚ ਬਦਲਣ ਵਾਲੀ ਮਸ਼ੀਨ
             const punjabiDigits = ['੦', '੧', '੨', '੩', '੪', '੫', '੬', '੭', '੮', '੯'];
             
             let pNum = num.toString().split('').map(d => punjabiDigits[d]).join('');
             let pCounter = counterNum.toString().split('').map(d => punjabiDigits[d]).join('');
 
-            // 2. ਪੂਰੀ ਲਾਈਨ ਹੁਣ ਸ਼ੁੱਧ ਗੁਰਮੁਖੀ ਵਿੱਚ ਹੈ
             let text = "ਟੋਕਨ ਨੰਬਰ " + pNum + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + pCounter + " ਤੇ ਆਓ";
             
-            // 3. ਗੂਗਲ ਦਾ ਪੰਜਾਬੀ ਸਰਵਰ
             let url = "https://translate.google.com/translate_tts?ie=UTF-8&q=" + encodeURIComponent(text) + "&tl=pa&client=tw-ob";
             
-            // 4. ਆਵਾਜ਼ ਚਲਾਉਣ ਲਈ
             let audio = document.getElementById('punjabi-audio');
             if (!audio) {
                 audio = document.createElement('audio');
@@ -128,6 +124,7 @@
             audio.src = url; 
             audio.play();
         }
+        
     </script>
 </body>
 </html>
