@@ -11,10 +11,11 @@
         body { background: #0f172a; color: white; font-family: 'Outfit', sans-serif; padding: 25px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; border: 1px solid #334155; margin-bottom: 20px; }
         .actions { display: flex; gap: 10px; }
-        .btn-call { color: #fff; border: none; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; font-size:1rem;}
-        .btn-c1 { background: #22c55e; } /* Green for Counter 1 */
-        .btn-c2 { background: #f97316; } /* Orange for Counter 2 */
+        
+        .btn-call-1 { background: #22c55e; color: #fff; border: none; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; }
+        .btn-call-2 { background: #f97316; color: #fff; border: none; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; }
         .btn-repeat { background: transparent; color: #38bdf8; border: 2px solid #38bdf8; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; }
+        
         table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 20px; overflow: hidden; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
         .token-badge { background: #38bdf8; color: #000; padding: 5px 12px; border-radius: 8px; font-weight: bold; }
@@ -23,12 +24,12 @@
 <body>
 
     <div class="header">
-        <h1>Admin Dashboard (2 Counters)</h1>
+        <h1>Admin Dashboard</h1>
         <input type="date" id="date-filter" onchange="renderList()" style="padding: 10px; border-radius: 8px; border: 1px solid #38bdf8; background: #0f172a; color: white;">
         <div class="actions">
-            <button class="btn-repeat" onclick="repeatCall()"><i class="fas fa-redo"></i> REPEAT</button>
-            <button class="btn-call btn-c1" onclick="callNext(1)"><i class="fas fa-bullhorn"></i> CALL (C-1)</button>
-            <button class="btn-call btn-c2" onclick="callNext(2)"><i class="fas fa-bullhorn"></i> CALL (C-2)</button>
+            <button class="btn-repeat" onclick="repeatCall()"><i class="fas fa-redo"></i> REPEAT BELL</button>
+            <button class="btn-call-1" onclick="callNext(1)"><i class="fas fa-bullhorn"></i> CALL C-1</button>
+            <button class="btn-call-2" onclick="callNext(2)"><i class="fas fa-bullhorn"></i> CALL C-2</button>
         </div>
     </div>
 
@@ -37,12 +38,13 @@
         <tbody id="table-body"></tbody>
     </table>
 
-    <audio id="punjabi-audio" style="display:none;"></audio>
+    <!-- ਆਵਾਜ਼ ਇੱਥੋਂ ਆਵੇਗੀ -->
+    <audio id="bell-sound" src="https://actions.google.com/sounds/v1/doors/elevator_ding.ogg" preload="auto"></audio>
 
     <script>
-         // PASTE YOUR FIREBASE CONFIG HERE
+        // ⚠️ APNI FIREBASE CONFIG ETHE PEST KARO ⚠️
         const firebaseConfig = {
-  apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
+            apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
   authDomain: "harpreet-token.firebaseapp.com",
   projectId: "harpreet-token",
   storageBucket: "harpreet-token.firebasestorage.app",
@@ -55,19 +57,22 @@
         const db = firebase.database();
         let allAppts = [];
 
+        window.onload = () => {
+            let today = new Date().toISOString().split('T')[0];
+            document.getElementById('date-filter').value = today;
+        };
+
         db.ref('queue').on('value', (snap) => {
             let data = snap.val(); allAppts = [];
             for(let key in data) allAppts.push({id: key, ...data[key]});
             renderList();
         });
 
-        // Set default view to Tomorrow
-        let tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1); 
-        document.getElementById('date-filter').value = tomorrow.toISOString().split('T')[0];
-
         function renderList() {
-            let selDate = document.getElementById('date-filter').value.split('-').reverse().join('-');
+            let dateVal = document.getElementById('date-filter').value;
+            if(!dateVal) return;
+            let selDate = dateVal.split('-').reverse().join('-');
+            
             let tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             let filtered = allAppts.filter(a => a.date === selDate).sort((a,b) => a.number - b.number);
@@ -76,20 +81,31 @@
             });
         }
 
-        // Counter number is passed here (1 or 2)
+        // ਘੰਟੀ ਵਜਾਉਣ ਵਾਲਾ ਫੰਕਸ਼ਨ
+        function playDing() {
+            let bell = document.getElementById('bell-sound');
+            bell.pause();
+            bell.currentTime = 0;
+            bell.volume = 1.0;
+            bell.play();
+        }
+
         function callNext(counterNum) {
-            let selDate = document.getElementById('date-filter').value.split('-').reverse().join('-');
+            let dateVal = document.getElementById('date-filter').value;
+            let selDate = dateVal.split('-').reverse().join('-');
             let filtered = allAppts.filter(a => a.date === selDate).sort((a,b) => a.number - b.number);
             
             if(filtered.length > 0) {
                 let next = filtered[0];
-                next.counter = counterNum; // Assign specific counter
+                next.counter = counterNum; 
                 
                 db.ref('queue/' + next.id).remove();
-                db.ref('current_serving').set(next);
+                db.ref('current_serving').set(next); 
+                
                 localStorage.setItem('currentlyServingToken', JSON.stringify(next));
                 
-                playAudio(next.number, counterNum);
+                // ਬਟਨ ਦਬਾਉਂਦਿਆਂ ਹੀ ਲੈਪਟਾਪ/ਕੰਪਿਊਟਰ 'ਚੋਂ ਘੰਟੀ ਵੱਜੇਗੀ
+                playDing();
             } else {
                 alert("ਕੋਈ ਟੋਕਨ ਬਾਕੀ ਨਹੀਂ ਹੈ!");
             }
@@ -97,25 +113,13 @@
 
         function repeatCall() {
             let cur = JSON.parse(localStorage.getItem('currentlyServingToken'));
-            if(cur && cur.counter) {
-                playAudio(cur.number, cur.counter);
+            if(cur) {
+                // ਰਿਪੀਟ ਬਟਨ ਦਬਾਉਣ 'ਤੇ ਵੀ ਘੰਟੀ ਵੱਜੇਗੀ
+                playDing();
             } else {
                 alert("ਪਹਿਲਾਂ ਕੋਈ ਟੋਕਨ ਬੁਲਾਓ!");
             }
         }
-
-       // ਸਿਰਫ਼ ਪ੍ਰੋਫੈਸ਼ਨਲ Bell (ਘੰਟੀ) ਦੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
-        function playAudio(num, counterNum) {
-            // ਇਹ ਗੂਗਲ ਦੀ ਓਰਿਜਨਲ ਪ੍ਰੋਫੈਸ਼ਨਲ 'Ding' (ਘੰਟੀ) ਦੀ ਆਵਾਜ਼ ਦਾ ਲਿੰਕ ਹੈ
-            let bell = new Audio('https://actions.google.com/sounds/v1/doors/elevator_ding.ogg');
-            
-            // ਆਵਾਜ਼ ਨੂੰ ਫੁੱਲ ਕਰਨ ਲਈ
-            bell.volume = 1.0; 
-            
-            // ਘੰਟੀ ਵਜਾਉਣ ਲਈ
-            bell.play();
-        }
-        
     </script>
 </body>
 </html>
