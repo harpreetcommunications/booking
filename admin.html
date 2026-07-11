@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Harpreet Communications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: 'Outfit', sans-serif; padding: 25px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; border: 1px solid #334155; margin-bottom: 20px; }
+        .actions { display: flex; gap: 10px; }
+        .btn-call { color: #fff; border: none; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; font-size:1rem;}
+        .btn-c1 { background: #22c55e; } /* Green for Counter 1 */
+        .btn-c2 { background: #f97316; } /* Orange for Counter 2 */
+        .btn-repeat { background: transparent; color: #38bdf8; border: 2px solid #38bdf8; padding: 12px 20px; font-weight: 800; border-radius: 10px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 20px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #334155; }
+        .token-badge { background: #38bdf8; color: #000; padding: 5px 12px; border-radius: 8px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Admin Dashboard (2 Counters)</h1>
+        <input type="date" id="date-filter" onchange="renderList()" style="padding: 10px; border-radius: 8px; border: 1px solid #38bdf8; background: #0f172a; color: white;">
+        <div class="actions">
+            <button class="btn-repeat" onclick="repeatCall()"><i class="fas fa-redo"></i> REPEAT</button>
+            <button class="btn-call btn-c1" onclick="callNext(1)"><i class="fas fa-bullhorn"></i> CALL (C-1)</button>
+            <button class="btn-call btn-c2" onclick="callNext(2)"><i class="fas fa-bullhorn"></i> CALL (C-2)</button>
+        </div>
+    </div>
+
+    <table>
+        <thead><tr><th>Token</th><th>Phone</th><th>Service</th><th>Time</th></tr></thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <audio id="punjabi-audio" style="display:none;"></audio>
+
+    <script>
+         // PASTE YOUR FIREBASE CONFIG HERE
+        const firebaseConfig = {
+  apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
+  authDomain: "harpreet-token.firebaseapp.com",
+  projectId: "harpreet-token",
+  storageBucket: "harpreet-token.firebasestorage.app",
+  messagingSenderId: "231999739276",
+  appId: "1:231999739276:web:59ce294d61ec699d14f2a9",
+  measurementId: "G-B8EQP35XLP"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let allAppts = [];
+
+        db.ref('queue').on('value', (snap) => {
+            let data = snap.val(); allAppts = [];
+            for(let key in data) allAppts.push({id: key, ...data[key]});
+            renderList();
+        });
+
+        // Set default view to Tomorrow
+        let tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1); 
+        document.getElementById('date-filter').value = tomorrow.toISOString().split('T')[0];
+
+        function renderList() {
+            let selDate = document.getElementById('date-filter').value.split('-').reverse().join('-');
+            let tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            let filtered = allAppts.filter(a => a.date === selDate).sort((a,b) => a.number - b.number);
+            filtered.forEach(a => {
+                tbody.innerHTML += `<tr><td><span class="token-badge">${a.number.toString().padStart(2, '0')}</span></td><td>${a.phone}</td><td>${a.service}</td><td>${a.time}</td></tr>`;
+            });
+        }
+
+        // Counter number is passed here (1 or 2)
+        function callNext(counterNum) {
+            let selDate = document.getElementById('date-filter').value.split('-').reverse().join('-');
+            let filtered = allAppts.filter(a => a.date === selDate).sort((a,b) => a.number - b.number);
+            
+            if(filtered.length > 0) {
+                let next = filtered[0];
+                next.counter = counterNum; // Assign specific counter
+                
+                db.ref('queue/' + next.id).remove();
+                db.ref('current_serving').set(next);
+                localStorage.setItem('currentlyServingToken', JSON.stringify(next));
+                
+                playAudio(next.number, counterNum);
+            } else {
+                alert("ਕੋਈ ਟੋਕਨ ਬਾਕੀ ਨਹੀਂ ਹੈ!");
+            }
+        }
+
+        function repeatCall() {
+            let cur = JSON.parse(localStorage.getItem('currentlyServingToken'));
+            if(cur && cur.counter) {
+                playAudio(cur.number, cur.counter);
+            } else {
+                alert("ਪਹਿਲਾਂ ਕੋਈ ਟੋਕਨ ਬੁਲਾਓ!");
+            }
+        }
+
+        function playAudio(num, counterNum) {
+            // Updated Voice with Counter Number
+            let text = "ਟੋਕਨ ਨੰਬਰ " + num + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + counterNum + " ਤੇ ਆਓ";
+            let url = "https://translate.google.com/translate_tts?ie=UTF-8&q=" + encodeURIComponent(text) + "&tl=pa&client=tw-ob";
+            let audio = document.getElementById('punjabi-audio');
+            audio.src = url; audio.play();
+        }
+    </script>
+</body>
+</html>

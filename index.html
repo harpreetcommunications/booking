@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - Harpreet Communications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 30px; border: 1px solid #38bdf8; width: 100%; max-width: 450px; box-shadow: 0 0 30px rgba(56,189,248,0.2); text-align: center; }
+        h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 5px; text-transform: uppercase; }
+        .subtitle { color: #fbbf24; font-size: 0.95rem; margin-bottom: 20px; font-weight: bold; background: rgba(251, 191, 36, 0.1); padding: 5px; border-radius: 8px;}
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; color: #cbd5e1; font-weight: 600; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; font-size: 1rem; border-radius: 10px; background: #1e293b; color: white; border: 1px solid #38bdf8; outline: none; box-sizing: border-box; }
+        .btn-get { background: #38bdf8; color: #000; border: none; padding: 18px; width: 100%; font-size: 1.3rem; font-weight: 800; border-radius: 15px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        
+        #confirmation-box { display: none; background: #1e293b; border: 2px solid #22c55e; border-radius: 20px; padding: 20px; margin-top: 20px; text-align: center; }
+        .token-circle { background: #22c55e; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 10px auto; }
+        .wa-btn { background: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; text-decoration: none; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="main-form">
+        <h1>Harpreet Communications</h1>
+        <div class="subtitle">⏰ Timings: 10:00 AM - 8:00 PM</div>
+        
+        <div class="input-group">
+            <label>Mobile Number:</label>
+            <input type="tel" id="phone-num" placeholder="Enter 10 digit number" maxlength="10">
+        </div>
+        <div class="input-group">
+            <label>Service:</label>
+            <select id="service-type">
+                <option value="Passport / Visa">✈️ Passport & Visa Services</option>
+                <option value="Aadhaar / PAN Card">🪪 Aadhaar & PAN Card</option>
+                <option value="Money Transfer">💸 Banking & Money Transfer</option>
+                <option value="Sarkari Certificate">📄 Other Service</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Date (Advance Booking):</label>
+            <input type="date" id="appt-date">
+        </div>
+
+        <button class="btn-get" id="book-btn" onclick="bookAppointment()">GET APPOINTMENT</button>
+        
+        <div id="confirmation-box">
+            <h2 style="color: #22c55e; margin: 0;">Appointment Booked!</h2>
+            <div class="token-circle" id="token-val">00</div>
+            <p style="margin: 5px 0;">Time: <b id="time-val">--</b></p>
+            <p style="margin: 5px 0; font-size: 0.8rem; color: #94a3b8;">Shop No. 3, Anoop Nagar, Jalandhar</p>
+            <a id="wa-link" class="wa-btn" target="_blank">SEND RECEIPT ON WHATSAPP</a>
+            <br>
+            <button onclick="location.reload()" style="background:transparent; border:none; color:#38bdf8; margin-top:15px; cursor:pointer;">Book Another</button>
+        </div>
+    </div>
+
+    <script>
+         // PASTE YOUR FIREBASE CONFIG HERE
+        const firebaseConfig = {
+  apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
+  authDomain: "harpreet-token.firebaseapp.com",
+  projectId: "harpreet-token",
+  storageBucket: "harpreet-token.firebasestorage.app",
+  messagingSenderId: "231999739276",
+  appId: "1:231999739276:web:59ce294d61ec699d14f2a9",
+  measurementId: "G-B8EQP35XLP"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Set min date to tomorrow
+        let today = new Date();
+        let tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1); 
+        let minDate = tomorrow.toISOString().split('T')[0];
+        document.getElementById('appt-date').setAttribute('min', minDate);
+        document.getElementById('appt-date').value = minDate; 
+
+        function bookAppointment() {
+            let phone = document.getElementById('phone-num').value;
+            let service = document.getElementById('service-type').value;
+            let rawDate = document.getElementById('appt-date').value;
+
+            if(phone.length < 10) { alert("Please enter a valid mobile number!"); return; }
+            
+            db.ref('counters/' + rawDate).once('value').then((snapshot) => {
+                let currentCount = snapshot.val() || 0;
+                let newToken = currentCount + 1;
+                
+                // ⚠️ TIME CHANGED TO 10 AM ⚠️
+                let nextTime = new Date(rawDate + "T10:00:00");
+                nextTime.setMinutes(nextTime.getMinutes() + (currentCount * 15));
+                
+                let shiftEnd = new Date(rawDate + "T20:00:00");
+                if (nextTime >= shiftEnd) {
+                    alert("⚠️ Ajj diyan bookings full han. Please agla din chuno.");
+                    return;
+                }
+                
+                let timeStr = nextTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                let data = {
+                    number: newToken, phone: phone, service: service,
+                    date: rawDate.split('-').reverse().join('-'),
+                    time: timeStr, rawDate: rawDate
+                };
+
+                db.ref('counters/' + rawDate).set(newToken);
+                db.ref('queue').push(data).then(() => {
+                    document.getElementById('book-btn').style.display = 'none';
+                    document.getElementById('confirmation-box').style.display = 'block';
+                    document.getElementById('token-val').innerText = newToken;
+                    document.getElementById('time-val').innerText = timeStr;
+                    
+                    let waText = `*Harpreet Communications*%0A-----------------------%0A✅ Appointment Confirmed!%0A%0AToken: ${newToken}%0ATime: ${timeStr}%0ADate: ${data.date}%0A%0AOffice timing: 10 AM to 8 PM.`;
+                    document.getElementById('wa-link').href = `https://wa.me/91${phone}?text=${waText}`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
