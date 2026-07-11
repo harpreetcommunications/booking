@@ -22,16 +22,12 @@
         .footer { position: absolute; bottom: 20px; left: 30px; color: #64748b; font-size: 1.2rem; letter-spacing: 1px;}
         .pop-animation { transform: scale(1.1); color: #fff !important; text-shadow: 0 0 100px #fff !important; }
 
-        /* ਆਵਾਜ਼ ਐਕਟਿਵ ਕਰਨ ਲਈ ਨਵੀਂ ਸਕ੍ਰੀਨ */
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .start-btn { background: #38bdf8; color: #000; font-size: 3rem; font-weight: 800; padding: 30px 60px; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 0 40px rgba(56, 189, 248, 0.5); transition: 0.3s; }
         .start-btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
-
-    <!-- ਘੰਟੀ ਦੀ ਆਵਾਜ਼ -->
-    <audio id="bell-sound" src="https://actions.google.com/sounds/v1/doors/elevator_ding.ogg" preload="auto"></audio>
 
     <div id="start-overlay">
         <h2 style="color:white; margin-bottom: 20px; font-size: 2.5rem;">Harpreet Communications</h2>
@@ -52,10 +48,35 @@
     <div class="status-box"><span id="status-text">Connecting...</span><div class="dot" id="status-dot"></div></div>
 
     <script>
-        // 1. ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਬਟਨ ਵਾਲਾ ਫੰਕਸ਼ਨ, ਤਾਂ ਜੋ ਇਹ ਹਮੇਸ਼ਾ ਚੱਲੇ
+        // 1. ਬਟਨ ਦਬਾਉਣ 'ਤੇ ਪਹਿਲੀ ਘੰਟੀ ਵਜਾਓ
         function startSystem() {
             document.getElementById('start-overlay').style.display = 'none';
-            document.getElementById('bell-sound').play().catch(()=>{}); 
+            playDing(); 
+        }
+
+        // ⚠️ 100% ਪੱਕੀ ਘੰਟੀ (ਕੰਪਿਊਟਰ ਦੇ ਅੰਦਰੋਂ ਬਣੀ ਆਵਾਜ਼)
+        function playDing() {
+            try {
+                let context = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = context.createOscillator();
+                let gain = context.createGain();
+                
+                osc.connect(gain);
+                gain.connect(context.destination);
+                
+                osc.type = 'sine';
+                // 880Hz ਇੱਕ ਪ੍ਰੋਫੈਸ਼ਨਲ ਬੈਂਕ ਵਾਲੀ ਟੋਨ ਹੁੰਦੀ ਹੈ
+                osc.frequency.setValueAtTime(880, context.currentTime); 
+                
+                gain.gain.setValueAtTime(1, context.currentTime);
+                // ਆਵਾਜ਼ ਨੂੰ ਹੌਲੀ-ਹੌਲੀ ਬੰਦ ਕਰਨਾ (ਗੂੰਜ ਪੈਦਾ ਕਰਨ ਲਈ)
+                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.6); 
+                
+                osc.start(context.currentTime);
+                osc.stop(context.currentTime + 0.6);
+            } catch(e) {
+                console.log("Audio Error", e);
+            }
         }
 
         // 2. ⚠️ APNI FIREBASE CONFIG ETHE PEST KARO ⚠️
@@ -105,18 +126,18 @@
 
                         tokenElement.classList.add('pop-animation');
                         setTimeout(() => { tokenElement.classList.remove('pop-animation'); }, 600);
+                        
+                        // ਜਦੋਂ ਵੀ ਨਵਾਂ ਟੋਕਨ ਆਵੇਗਾ, ਘੰਟੀ ਵੱਜੇਗੀ
+                        if (lastTokenSeen !== "00") {
+                            playDing();
+                        }
+                        
                         lastTokenSeen = formattedToken;
-
-                        let bell = document.getElementById('bell-sound');
-                        bell.pause();
-                        bell.currentTime = 0;
-                        bell.volume = 1.0;
-                        bell.play().catch(e => console.log("Sound blocked by browser"));
                     }
                 }
             });
         } catch (error) {
-            console.error("Firebase Config Missing or Incorrect", error);
+            console.error("Firebase Config Error", error);
         }
     </script>
 </body>
