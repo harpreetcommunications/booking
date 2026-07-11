@@ -104,25 +104,25 @@
             }
         }
 
-       // 100% ਠੇਠ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
+       // 100% ਚੱਲਣ ਵਾਲਾ ਆਵਾਜ਼ ਵਾਲਾ ਕੋਡ
         function playAudio(num, counterNum) {
-            const punjabiDigits = ['੦', '੧', '੨', '੩', '੪', '੫', '੬', '੭', '੮', '੯'];
+            // ਗੁਰਮੁਖੀ ਨੰਬਰਾਂ ਨੂੰ ਪੰਜਾਬੀ ਸ਼ਬਦਾਂ ਵਿੱਚ ਬਦਲਣਾ
+            const pDigits = ['ਸਿਫ਼ਰ', 'ਇੱਕ', 'ਦੋ', 'ਤਿੰਨ', 'ਚਾਰ', 'ਪੰਜ', 'ਛੇ', 'ਸੱਤ', 'ਅੱਠ', 'ਨੌਂ'];
             
-            let pNum = num.toString().split('').map(d => punjabiDigits[d]).join('');
-            let pCounter = counterNum.toString().split('').map(d => punjabiDigits[d]).join('');
-
-            let text = "ਟੋਕਨ ਨੰਬਰ " + pNum + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + pCounter + " ਤੇ ਆਓ";
+            let n = num.toString();
+            let c = counterNum.toString();
             
-            let url = "https://translate.google.com/translate_tts?ie=UTF-8&q=" + encodeURIComponent(text) + "&tl=pa&client=tw-ob";
+            let text = "ਟੋਕਨ ਨੰਬਰ " + n + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + c + " ਤੇ ਆਓ";
             
-            let audio = document.getElementById('punjabi-audio');
-            if (!audio) {
-                audio = document.createElement('audio');
-                audio.id = 'punjabi-audio';
-                document.body.appendChild(audio);
-            }
-            audio.src = url; 
-            audio.play();
+            // ਨਵੀਂ ਟੈਕਨਾਲੋਜੀ ਜੋ ਆਵਾਜ਼ ਨੂੰ ਫੋਰਸ ਕਰਕੇ ਚਲਾਏਗੀ
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'pa-IN'; // ਪੰਜਾਬੀ
+            speech.rate = 0.8;
+            speech.volume = 1;
+            
+            // ਆਵਾਜ਼ ਚਲਾਉਣ ਲਈ
+            window.speechSynthesis.cancel(); // ਪੁਰਾਣੀ ਆਵਾਜ਼ ਰੋਕੋ
+            window.speechSynthesis.speak(speech); // ਨਵੀਂ ਚਲਾਓ
         }
         
     </script>
