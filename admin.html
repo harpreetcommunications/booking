@@ -38,9 +38,6 @@
         <tbody id="table-body"></tbody>
     </table>
 
-    <!-- ਆਵਾਜ਼ ਇੱਥੋਂ ਆਵੇਗੀ -->
-    <audio id="bell-sound" src="https://actions.google.com/sounds/v1/doors/elevator_ding.ogg" preload="auto"></audio>
-
     <script>
         // ⚠️ APNI FIREBASE CONFIG ETHE PEST KARO ⚠️
         const firebaseConfig = {
@@ -81,13 +78,27 @@
             });
         }
 
-        // ਘੰਟੀ ਵਜਾਉਣ ਵਾਲਾ ਫੰਕਸ਼ਨ
+        // ⚠️ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਵਾਲੀ 100% ਪੱਕੀ ਘੰਟੀ (ਕੰਪਿਊਟਰ ਦੇ ਅੰਦਰੋਂ)
         function playDing() {
-            let bell = document.getElementById('bell-sound');
-            bell.pause();
-            bell.currentTime = 0;
-            bell.volume = 1.0;
-            bell.play();
+            try {
+                let context = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = context.createOscillator();
+                let gain = context.createGain();
+                
+                osc.connect(gain);
+                gain.connect(context.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, context.currentTime); // ਪ੍ਰੋਫੈਸ਼ਨਲ ਬੈਂਕ ਵਾਲੀ ਟੋਨ
+                
+                gain.gain.setValueAtTime(1, context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.6); // ਆਵਾਜ਼ ਦੀ ਗੂੰਜ
+                
+                osc.start(context.currentTime);
+                osc.stop(context.currentTime + 0.6);
+            } catch(e) {
+                console.log("Audio Error", e);
+            }
         }
 
         function callNext(counterNum) {
