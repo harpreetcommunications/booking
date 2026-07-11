@@ -104,25 +104,25 @@
             }
         }
 
-       // 100% ਚੱਲਣ ਵਾਲਾ ਆਵਾਜ਼ ਵਾਲਾ ਕੋਡ
+       // 100% ਚੱਲਣ ਵਾਲਾ 'ਪਿੰਗਲਿਸ਼' (Pinglish) ਕੋਡ
         function playAudio(num, counterNum) {
-            // ਗੁਰਮੁਖੀ ਨੰਬਰਾਂ ਨੂੰ ਪੰਜਾਬੀ ਸ਼ਬਦਾਂ ਵਿੱਚ ਬਦਲਣਾ
-            const pDigits = ['ਸਿਫ਼ਰ', 'ਇੱਕ', 'ਦੋ', 'ਤਿੰਨ', 'ਚਾਰ', 'ਪੰਜ', 'ਛੇ', 'ਸੱਤ', 'ਅੱਠ', 'ਨੌਂ'];
+            // ਨੰਬਰਾਂ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਅੱਖਰਾਂ ਵਿੱਚ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਦੇਣਾ
+            const pWords = ['zero', 'ikk', 'do', 'tinn', 'chaar', 'panj', 'chhe', 'satt', 'atth', 'nau'];
             
-            let n = num.toString();
-            let c = counterNum.toString();
+            // ਜੇ ਨੰਬਰ 12 ਹੈ, ਤਾਂ ਇਹ 'ikk do' ਬਣਾਵੇਗਾ
+            let nStr = num.toString().split('').map(d => pWords[parseInt(d)]).join(' ');
+            let cStr = counterNum.toString().split('').map(d => pWords[parseInt(d)]).join(' ');
+
+            // ਸਾਰੀ ਲਾਈਨ ਅੰਗਰੇਜ਼ੀ ਅੱਖਰਾਂ ਵਿੱਚ ਹੈ, ਇਸ ਲਈ ਕੰਪਿਊਟਰ ਇਸਨੂੰ ਛੱਡ ਨਹੀਂ ਸਕੇਗਾ
+            let text = "Token number, " + nStr + ", kirpaa karke, counter number, " + cStr + " te aao";
             
-            let text = "ਟੋਕਨ ਨੰਬਰ " + n + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + c + " ਤੇ ਆਓ";
-            
-            // ਨਵੀਂ ਟੈਕਨਾਲੋਜੀ ਜੋ ਆਵਾਜ਼ ਨੂੰ ਫੋਰਸ ਕਰਕੇ ਚਲਾਏਗੀ
             let speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'pa-IN'; // ਪੰਜਾਬੀ
-            speech.rate = 0.8;
+            speech.lang = 'hi-IN'; // ਇੰਡੀਅਨ ਐਕਸੈਂਟ
+            speech.rate = 0.85; // ਆਵਾਜ਼ ਦੀ ਸਪੀਡ
             speech.volume = 1;
             
-            // ਆਵਾਜ਼ ਚਲਾਉਣ ਲਈ
-            window.speechSynthesis.cancel(); // ਪੁਰਾਣੀ ਆਵਾਜ਼ ਰੋਕੋ
-            window.speechSynthesis.speak(speech); // ਨਵੀਂ ਚਲਾਓ
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(speech);
         }
         
     </script>
