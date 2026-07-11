@@ -104,21 +104,29 @@
             }
         }
 
-       // ਬਿਲਕੁਲ ਸਾਫ਼ ਦੇਸੀ ਆਵਾਜ਼ ਲਈ ਨਵਾਂ ਕੋਡ
+       / 100% ਠੇਠ ਪੰਜਾਬੀ ਆਵਾਜ਼ ਲਈ ਕੋਡ
         function playAudio(num, counterNum) {
-            // ਅੱਖਰ ਅੰਗਰੇਜ਼ੀ ਦੇ, ਪਰ ਆਵਾਜ਼ ਪੰਜਾਬੀ/ਹਿੰਦੀ ਵਾਲੀ
-            let text = "Token number " + num + ", kripaa karke counter number " + counterNum + " te aao";
+            // 1. ਅੰਗਰੇਜ਼ੀ ਨੰਬਰਾਂ ਨੂੰ ਗੁਰਮੁਖੀ ਨੰਬਰਾਂ ਵਿੱਚ ਬਦਲਣ ਵਾਲੀ ਮਸ਼ੀਨ
+            const punjabiDigits = ['੦', '੧', '੨', '੩', '੪', '੫', '੬', '੭', '੮', '੯'];
             
-            let speech = new SpeechSynthesisUtterance();
-            speech.text = text;
+            let pNum = num.toString().split('').map(d => punjabiDigits[d]).join('');
+            let pCounter = counterNum.toString().split('').map(d => punjabiDigits[d]).join('');
+
+            // 2. ਪੂਰੀ ਲਾਈਨ ਹੁਣ ਸ਼ੁੱਧ ਗੁਰਮੁਖੀ ਵਿੱਚ ਹੈ
+            let text = "ਟੋਕਨ ਨੰਬਰ " + pNum + ", ਕਿਰਪਾ ਕਰਕੇ ਕਾਊਂਟਰ ਨੰਬਰ " + pCounter + " ਤੇ ਆਓ";
             
-            // hi-IN (Hindi-India) ਲਗਾਉਣ ਨਾਲ ਕੰਪਿਊਟਰ ਦੇਸੀ ਐਕਸੈਂਟ ਵਿੱਚ ਬੋਲੇਗਾ
-            speech.lang = 'hi-IN'; 
+            // 3. ਗੂਗਲ ਦਾ ਪੰਜਾਬੀ ਸਰਵਰ
+            let url = "https://translate.google.com/translate_tts?ie=UTF-8&q=" + encodeURIComponent(text) + "&tl=pa&client=tw-ob";
             
-            speech.rate = 0.85; // ਆਵਾਜ਼ ਦੀ ਸਪੀਡ ਥੋੜ੍ਹੀ ਟਿਕਾਅ ਵਾਲੀ
-            speech.volume = 1.0; 
-            
-            window.speechSynthesis.speak(speech);
+            // 4. ਆਵਾਜ਼ ਚਲਾਉਣ ਲਈ
+            let audio = document.getElementById('punjabi-audio');
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.id = 'punjabi-audio';
+                document.body.appendChild(audio);
+            }
+            audio.src = url; 
+            audio.play();
         }
     </script>
 </body>
