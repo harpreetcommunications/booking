@@ -78,24 +78,35 @@
             });
         }
 
-        // ⚠️ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਵਾਲੀ 100% ਪੱਕੀ ਘੰਟੀ (ਕੰਪਿਊਟਰ ਦੇ ਅੰਦਰੋਂ)
+        // ⚠️ ਬਿਲਕੁਲ ਅਸਲੀ "ਟਿੰਗ-ਟੌਂਗ" (Ting-Tong) ਆਵਾਜ਼ ਦਾ ਕੋਡ
         function playDing() {
             try {
                 let context = new (window.AudioContext || window.webkitAudioContext)();
-                let osc = context.createOscillator();
-                let gain = context.createGain();
                 
-                osc.connect(gain);
-                gain.connect(context.destination);
+                // 1. ਪਹਿਲੀ ਆਵਾਜ਼ "ਟਿੰਗ" (ਪਤਲੀ ਆਵਾਜ਼)
+                let osc1 = context.createOscillator();
+                let gain1 = context.createGain();
+                osc1.connect(gain1);
+                gain1.connect(context.destination);
+                osc1.type = 'sine';
+                osc1.frequency.value = 987; // ਉੱਚੀ ਫ੍ਰੀਕੁਐਂਸੀ (Ting)
+                gain1.gain.setValueAtTime(1, context.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+                osc1.start(context.currentTime);
+                osc1.stop(context.currentTime + 0.5);
+
+                // 2. ਦੂਜੀ ਆਵਾਜ਼ "ਟੌਂਗ" (ਭਾਰੀ ਆਵਾਜ਼) - ਪਹਿਲੀ ਆਵਾਜ਼ ਤੋਂ ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ
+                let osc2 = context.createOscillator();
+                let gain2 = context.createGain();
+                osc2.connect(gain2);
+                gain2.connect(context.destination);
+                osc2.type = 'sine';
+                osc2.frequency.value = 784; // ਭਾਰੀ ਫ੍ਰੀਕੁਐਂਸੀ (Tong)
+                gain2.gain.setValueAtTime(1, context.currentTime + 0.3); // 0.3 ਸੈਕਿੰਡ ਦੀ ਬ੍ਰੇਕ
+                gain2.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 1.2); // ਆਵਾਜ਼ ਦੀ ਗੂੰਜ
+                osc2.start(context.currentTime + 0.3);
+                osc2.stop(context.currentTime + 1.2);
                 
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, context.currentTime); // ਪ੍ਰੋਫੈਸ਼ਨਲ ਬੈਂਕ ਵਾਲੀ ਟੋਨ
-                
-                gain.gain.setValueAtTime(1, context.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.6); // ਆਵਾਜ਼ ਦੀ ਗੂੰਜ
-                
-                osc.start(context.currentTime);
-                osc.stop(context.currentTime + 0.6);
             } catch(e) {
                 console.log("Audio Error", e);
             }
@@ -115,7 +126,7 @@
                 
                 localStorage.setItem('currentlyServingToken', JSON.stringify(next));
                 
-                // ਬਟਨ ਦਬਾਉਂਦਿਆਂ ਹੀ ਲੈਪਟਾਪ/ਕੰਪਿਊਟਰ 'ਚੋਂ ਘੰਟੀ ਵੱਜੇਗੀ
+                // ਬਟਨ ਦਬਾਉਂਦਿਆਂ ਹੀ Ting-Tong ਵੱਜੇਗੀ
                 playDing();
             } else {
                 alert("ਕੋਈ ਟੋਕਨ ਬਾਕੀ ਨਹੀਂ ਹੈ!");
@@ -125,7 +136,6 @@
         function repeatCall() {
             let cur = JSON.parse(localStorage.getItem('currentlyServingToken'));
             if(cur) {
-                // ਰਿਪੀਟ ਬਟਨ ਦਬਾਉਣ 'ਤੇ ਵੀ ਘੰਟੀ ਵੱਜੇਗੀ
                 playDing();
             } else {
                 alert("ਪਹਿਲਾਂ ਕੋਈ ਟੋਕਨ ਬੁਲਾਓ!");
