@@ -30,15 +30,14 @@
 </head>
 <body>
 
-    <!-- ਇਹ ਬਟਨ ਦਬਾਉਣ ਨਾਲ ਹੀ ਆਵਾਜ਼ ਦਾ ਤਾਲਾ ਖੁੱਲ੍ਹੇਗਾ -->
+    <!-- ਘੰਟੀ ਦੀ ਆਵਾਜ਼ -->
+    <audio id="bell-sound" src="https://actions.google.com/sounds/v1/doors/elevator_ding.ogg" preload="auto"></audio>
+
     <div id="start-overlay">
         <h2 style="color:white; margin-bottom: 20px; font-size: 2.5rem;">Harpreet Communications</h2>
         <button class="start-btn" onclick="startSystem()">▶ START TV</button>
         <p style="color:#94a3b8; margin-top: 20px; font-size:1.5rem;">(ਇਹ ਬਟਨ ਦਬਾਉਣ ਨਾਲ ਟੀਵੀ ਦੀ ਘੰਟੀ ਚਾਲੂ ਹੋ ਜਾਵੇਗੀ)</p>
     </div>
-
-    <!-- ਘੰਟੀ ਦੀ ਆਵਾਜ਼ -->
-    <audio id="bell-sound" src="https://actions.google.com/sounds/v1/doors/elevator_ding.ogg" preload="auto"></audio>
 
     <div class="display-card">
         <h1>Harpreet Communications</h1>
@@ -53,11 +52,15 @@
     <div class="status-box"><span id="status-text">Connecting...</span><div class="dot" id="status-dot"></div></div>
 
     <script>
-        // ⚠️ APNI FIREBASE CONFIG ETHE PEST KARO ⚠️
+        // 1. ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਬਟਨ ਵਾਲਾ ਫੰਕਸ਼ਨ, ਤਾਂ ਜੋ ਇਹ ਹਮੇਸ਼ਾ ਚੱਲੇ
+        function startSystem() {
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('bell-sound').play().catch(()=>{}); 
+        }
+
+        // 2. ⚠️ APNI FIREBASE CONFIG ETHE PEST KARO ⚠️
         const firebaseConfig = {
-            // PASTE YOUR FIREBASE CONFIG HERE
-        const firebaseConfig = {
-  apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
+            apiKey: "AIzaSyB99ASne_eF42O-6tSUllfh7c-aEndEGyA",
   authDomain: "harpreet-token.firebaseapp.com",
   projectId: "harpreet-token",
   storageBucket: "harpreet-token.firebasestorage.app",
@@ -66,60 +69,55 @@
   measurementId: "G-B8EQP35XLP"
         };
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let lastTokenSeen = "00";
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            let lastTokenSeen = "00";
 
-        // ਬਟਨ ਦਬਾਉਣ 'ਤੇ ਸਕ੍ਰੀਨ ਹਟਾਉਣਾ ਅਤੇ ਆਵਾਜ਼ ਚਾਲੂ ਕਰਨਾ
-        function startSystem() {
-            document.getElementById('start-overlay').style.display = 'none';
-            // ਇੱਕ ਵਾਰ ਖਾਲੀ ਘੰਟੀ ਚਲਾ ਕੇ ਕੰਪਿਊਟਰ ਨੂੰ ਮਨਜ਼ੂਰੀ ਦੇਣੀ
-            document.getElementById('bell-sound').play().catch(()=>{}); 
-        }
-
-        db.ref('.info/connected').on('value', function(snap) {
-            let dot = document.getElementById('status-dot');
-            let text = document.getElementById('status-text');
-            if (snap.val() === true) {
-                dot.style.background = '#22c55e'; dot.style.boxShadow = '0 0 15px #22c55e'; text.innerText = "System LIVE";
-            } else {
-                dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 15px #ef4444'; text.innerText = "Offline";
-            }
-        });
-
-        db.ref('current_serving').on('value', (snapshot) => {
-            let current = snapshot.val();
-            if (current && current.number) {
-                let formattedToken = current.number.toString().padStart(2, '0');
-                let tokenElement = document.getElementById('now-serving-token');
-                let counterElement = document.getElementById('counter-name');
-                let serviceElement = document.getElementById('service-name');
-
-                if (formattedToken !== lastTokenSeen) {
-                    tokenElement.innerText = formattedToken;
-                    serviceElement.innerText = current.service || "Please proceed to counter";
-                    
-                    if(current.counter) {
-                        counterElement.innerText = "ਕਾਊਂਟਰ: " + current.counter;
-                        counterElement.style.color = current.counter === 1 ? "#22c55e" : "#f97316";
-                        counterElement.style.borderColor = current.counter === 1 ? "#22c55e" : "#f97316";
-                        counterElement.style.background = current.counter === 1 ? "rgba(34, 197, 94, 0.1)" : "rgba(249, 115, 22, 0.1)";
-                    }
-
-                    tokenElement.classList.add('pop-animation');
-                    setTimeout(() => { tokenElement.classList.remove('pop-animation'); }, 600);
-                    lastTokenSeen = formattedToken;
-
-                    // ⚠️ ਨਵਾਂ ਟੋਕਨ ਆਉਣ 'ਤੇ ਘੰਟੀ ਵਜਾਓ ⚠️
-                    let bell = document.getElementById('bell-sound');
-                    // ਆਵਾਜ਼ ਰੀਸੈੱਟ ਕਰਕੇ ਫੁੱਲ ਵੌਲਿਊਮ ਵਿੱਚ ਵਜਾਉਣਾ
-                    bell.pause();
-                    bell.currentTime = 0;
-                    bell.volume = 1.0;
-                    bell.play().catch(e => console.log("Sound blocked by browser"));
+            db.ref('.info/connected').on('value', function(snap) {
+                let dot = document.getElementById('status-dot');
+                let text = document.getElementById('status-text');
+                if (snap.val() === true) {
+                    dot.style.background = '#22c55e'; dot.style.boxShadow = '0 0 15px #22c55e'; text.innerText = "System LIVE";
+                } else {
+                    dot.style.background = '#ef4444'; dot.style.boxShadow = '0 0 15px #ef4444'; text.innerText = "Offline";
                 }
-            }
-        });
+            });
+
+            db.ref('current_serving').on('value', (snapshot) => {
+                let current = snapshot.val();
+                if (current && current.number) {
+                    let formattedToken = current.number.toString().padStart(2, '0');
+                    let tokenElement = document.getElementById('now-serving-token');
+                    let counterElement = document.getElementById('counter-name');
+                    let serviceElement = document.getElementById('service-name');
+
+                    if (formattedToken !== lastTokenSeen) {
+                        tokenElement.innerText = formattedToken;
+                        serviceElement.innerText = current.service || "Please proceed to counter";
+                        
+                        if(current.counter) {
+                            counterElement.innerText = "ਕਾਊਂਟਰ: " + current.counter;
+                            counterElement.style.color = current.counter === 1 ? "#22c55e" : "#f97316";
+                            counterElement.style.borderColor = current.counter === 1 ? "#22c55e" : "#f97316";
+                            counterElement.style.background = current.counter === 1 ? "rgba(34, 197, 94, 0.1)" : "rgba(249, 115, 22, 0.1)";
+                        }
+
+                        tokenElement.classList.add('pop-animation');
+                        setTimeout(() => { tokenElement.classList.remove('pop-animation'); }, 600);
+                        lastTokenSeen = formattedToken;
+
+                        let bell = document.getElementById('bell-sound');
+                        bell.pause();
+                        bell.currentTime = 0;
+                        bell.volume = 1.0;
+                        bell.play().catch(e => console.log("Sound blocked by browser"));
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Firebase Config Missing or Incorrect", error);
+        }
     </script>
 </body>
 </html>
